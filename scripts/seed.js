@@ -64,15 +64,13 @@ async function seedInvoices() {
     console.log(`Created "invoices" table`);
 
     // Insert data into the "invoices" table
-    const insertedInvoices = await Promise.all(
-      invoices.map(
-        (invoice) => sql`
-        INSERT INTO invoices (customer_id, amount, status, date)
-        VALUES (${invoice.customer_id}, ${invoice.amount}, ${invoice.status}, ${invoice.date})
-        ON CONFLICT (id) DO NOTHING;
-      `,
-      ),
-    );
+    const insertedInvoices = [];
+    for (const invoice of invoices) {
+      const result = await sql`INSERT INTO invoices (customer_id, amount, status, date)
+  VALUES (${invoice.customer_id}, ${invoice.amount}, ${invoice.status}, ${invoice.date})
+  ON CONFLICT (id) DO NOTHING;`
+      insertedInvoices.push(result)
+    }
 
     console.log(`Seeded ${insertedInvoices.length} invoices`);
 
@@ -103,15 +101,16 @@ async function seedCustomers() {
     console.log(`Created "customers" table`);
 
     // Insert data into the "customers" table
-    const insertedCustomers = await Promise.all(
-      customers.map(
-        (customer) => sql`
-        INSERT INTO customers (id, name, email, image_url)
-        VALUES (${customer.id}, ${customer.name}, ${customer.email}, ${customer.image_url})
-        ON CONFLICT (id) DO NOTHING;
-      `,
-      ),
-    );
+
+    const insertedCustomers = []
+
+    for (const customer of customers) {
+      const query = await sql`
+      INSERT INTO customers (id, name, email, image_url)
+      VALUES (${customer.id}, ${customer.name}, ${customer.email}, ${customer.image_url})
+      ON CONFLICT (id) DO NOTHING;
+    `
+    }
 
     console.log(`Seeded ${insertedCustomers.length} customers`);
 
@@ -136,18 +135,16 @@ async function seedRevenue() {
     `;
 
     console.log(`Created "revenue" table`);
-
+    const insertedRevenue = []
     // Insert data into the "revenue" table
-    const insertedRevenue = await Promise.all(
-      revenue.map(
-        (rev) => sql`
-        INSERT INTO revenue (month, revenue)
-        VALUES (${rev.month}, ${rev.revenue})
-        ON CONFLICT (month) DO NOTHING;
-      `,
-      ),
-    );
-
+    for (const rev of revenue) {
+      const query = await sql`
+   INSERT INTO revenue (month, revenue)
+   VALUES (${rev.month}, ${rev.revenue})
+    ON CONFLICT (month) DO NOTHING;
+    `
+      insertedRevenue.push(query);
+    }
     console.log(`Seeded ${insertedRevenue.length} revenue`);
 
     return {
